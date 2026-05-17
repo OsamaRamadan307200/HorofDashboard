@@ -1,0 +1,303 @@
+﻿@model IEnumerable<HorofDashboard.Models.Unit>
+
+@{
+    ViewData["Title"] = "Unit Management";
+    var levelFilter = ViewBag.LevelFilter as HorofDashboard.Models.Level;
+    var levels = ViewBag.Levels as List<HorofDashboard.Models.Level>;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">Unit Management</h1>
+                    <p class="text-muted mb-0">
+                        @if (levelFilter != null)
+                        {
+                            <span>Managing units for: <strong>@levelFilter.Name</strong></span>
+                        }
+                        else
+                        {
+                            <span>Manage course units and their properties</span>
+                        }
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    @if (levelFilter != null)
+                    {
+                        <a href="@Url.Action("Create", new { levelId = levelFilter.Id })" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Unit to @levelFilter.Name
+                        </a>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>View All Units
+                        </a>
+                    }
+                   @*  else
+                    {
+                        <a href="@Url.Action("Create")" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add New Unit
+                        </a>
+                    } *@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Filter -->
+    @if (levelFilter == null && levels != null && levels.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title mb-3">Filter by Level</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-primary btn-sm">All Levels</a>
+                    @foreach (var level in levels)
+                    {
+                        <a href="@Url.Action("Index", new { levelId = level.Id })" class="btn btn-outline-secondary btn-sm">
+                            @level.Name
+                            <span class="badge bg-primary ms-1">@level.Units.Count</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">@Model.Count()</h3>
+                            <p class="mb-0">Total Units</p>
+                        </div>
+                        <i class="fas fa-book fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">@Model.Count(u => u.Status)</h3>
+                            <p class="mb-0">Active Units</p>
+                        </div>
+                        <i class="fas fa-eye fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">@Model.Sum(u => u.Lessons.Count)</h3>
+                            <p class="mb-0">Total Lessons</p>
+                        </div>
+                        <i class="fas fa-play-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="mb-0">@Model.Sum(u => u.HoursWork ?? 0)</h3>
+                            <p class="mb-0">Total Hours</p>
+                        </div>
+                        <i class="fas fa-clock fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Units Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="unitsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="8%">Position</th>
+                            <th width="20%">Unit</th>
+                            <th width="15%">Level</th>
+                            <th width="25%">Description</th>
+                            <th width="8%">Status</th>
+                            <th width="10%">Progress</th>
+                            <th width="8%">Hours</th>
+                            <th width="6%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var group in Model.GroupBy(u => u.Level).OrderBy(g => g.Key.Position))
+                        {
+                            @foreach (var unit in group.OrderBy(u => u.Position))
+                            {
+                                <tr data-unit-id="@unit.Id" data-level-id="@unit.LevelId">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-secondary me-2">#@unit.Position</span>
+                                            @* <div class="btn-group-vertical btn-group-sm">
+                                                <button class="btn btn-outline-secondary btn-sm position-btn"
+                                                        data-unit-id="@unit.Id"
+                                                        data-direction="up"
+                                                @(group.OrderBy(u => u.Position).First().Id == unit.Id ? "disabled" : "")>
+                                                    <i class="fas fa-chevron-up"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm position-btn"
+                                                        data-unit-id="@unit.Id"
+                                                        data-direction="down"
+                                                @(group.OrderBy(u => u.Position).Last().Id == unit.Id ? "disabled" : "")>
+                                                    <i class="fas fa-chevron-down"></i>
+                                                </button>
+                                            </div> *@
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div class="fw-bold">@unit.Name</div>
+                                            <small class="text-muted">@unit.Url</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@unit.Level.Name</span>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 250px;" title="@unit.Description">
+                                            @unit.Description
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm status-toggle @(unit.Status ? "btn-success" : "btn-danger")"
+                                                data-unit-id="@unit.Id"
+                                                data-current-status="@unit.Status.ToString().ToLower()">
+                                            <i class="fas @(unit.Status ? "fa-eye" : "fa-eye-slash") me-1"></i>
+                                            @(unit.Status ? "Active" : "Inactive")
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <div class="small">
+                                                <strong>@unit.Lessons.Count</strong> / @(unit.LessonsCount ?? 0) lessons
+                                            </div>
+                                            @if (unit.LessonsCount.HasValue && unit.LessonsCount.Value > 0)
+                                            {
+                                                var progress = Math.Round((double)unit.Lessons.Count / unit.LessonsCount.Value * 100, 1);
+                                                <div class="progress" style="height: 4px;">
+                                                    <div class="progress-bar @(progress == 100 ? "bg-success" : "bg-primary")"
+                                                         style="width: @progress%"></div>
+                                                </div>
+                                                <small class="text-muted">@progress%</small>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (unit.HoursWork.HasValue)
+                                        {
+                                            <span class="badge bg-warning text-dark">@unit.HoursWork h</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="@Url.Action("Details", new { id = unit.Id })" class="btn btn-outline-info" title="Details">
+                                                <i class="fas fa-eye"></i>Details
+                                            </a>
+                                            <a href="@Url.Action("Edit", new { id = unit.Id })" class="btn btn-outline-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>Edit
+                                            </a>
+                                            <a href="@Url.Action("Delete", new { id = unit.Id })" class="btn btn-outline-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Status toggle functionality
+            $('.status-toggle').click(function() {
+                const button = $(this);
+                const unitId = button.data('unit-id');
+
+                $.ajax({
+                    url: `/api/UnitsApi/${unitId}/status`,
+                    type: 'PATCH',
+                    success: function(response) {
+                        const newStatus = response.status;
+                        button.data('current-status', newStatus);
+
+                        if (newStatus) {
+                            button.removeClass('btn-danger').addClass('btn-success');
+                            button.html('<i class="fas fa-eye me-1"></i>Active');
+                        } else {
+                            button.removeClass('btn-success').addClass('btn-danger');
+                            button.html('<i class="fas fa-eye-slash me-1"></i>Inactive');
+                        }
+                    },
+                    error: function() {
+                        alert('Error updating status');
+                    }
+                });
+            });
+
+            // Position change functionality
+            $('.position-btn').click(function() {
+                const button = $(this);
+                const unitId = button.data('unit-id');
+                const direction = button.data('direction');
+
+                $.ajax({
+                    url: `/api/UnitsApi/${unitId}/position`,
+                    type: 'PATCH',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ direction: direction }),
+                    success: function() {
+                        location.reload(); // Reload to show new positions
+                    },
+                    error: function() {
+                        alert('Error updating position');
+                    }
+                });
+            });
+        });
+    </script>
+}

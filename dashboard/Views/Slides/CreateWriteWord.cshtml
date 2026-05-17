@@ -1,0 +1,65 @@
+@model HorofDashboard.ViewModels.Slides.WriteWordViewModel
+@{
+    ViewData["Title"]         = "Create Write Word Slide";
+    ViewData["SlideTypeName"] = "Write Word";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-pencil-alt me-2 text-primary"></i>Write Word
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("SelectType", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-exchange-alt me-1"></i>Change Type
+                        </a>
+                        <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="CreateWriteWord" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <partial name="_SlideBaseFields" model="Model" />
+
+                        <hr class="my-4" />
+
+                        <h5 class="mb-3">Correct Answer</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="WriteWordAnswer" class="form-label fw-semibold">
+                                Expected Word / Phrase <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="WriteWordAnswer" class="form-control form-control-lg"
+                                   placeholder="Enter the exact word or phrase the student must write" />
+                            <div class="form-text">
+                                The student's answer must match this exactly (case-insensitive).
+                            </div>
+                            <span asp-validation-for="WriteWordAnswer" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-2 border-top mt-3">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Create Slide
+                            </button>
+                            <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                               class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

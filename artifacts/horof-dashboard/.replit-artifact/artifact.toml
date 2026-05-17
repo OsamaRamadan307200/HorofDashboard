@@ -1,0 +1,22 @@
+kind = "web"
+previewPath = "/"
+title = "Horof Dashboard"
+version = "1.0.0"
+id = "artifacts/horof-dashboard"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18288
+
+[services.development]
+run = "dotnet run --project /home/runner/workspace/dashboard/HorofDashboard.csproj"
+
+[services.env]
+PORT = "18288"
+BASE_PATH = "/"

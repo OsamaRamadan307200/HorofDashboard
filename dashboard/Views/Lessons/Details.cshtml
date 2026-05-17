@@ -1,0 +1,204 @@
+﻿@model HorofDashboard.Models.Lesson
+
+@{
+    ViewData["Title"] = "Lesson Details";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Levels")">Levels</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Details", "Levels", new { id = Model.Unit.LevelId })">@Model.Unit.Level.Name</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Units", new { levelId = Model.Unit.LevelId })">Units</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Details", "Units", new { id = Model.UnitId })">@Model.Unit.Name</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Lesson Details</h4>
+                        <div class="btn-group">
+                            <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a>
+                            <a href="@Url.Action("Index", new { unitId = Model.UnitId })" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Lessons
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold text-muted" width="20%">Name:</td>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Level:</td>
+                                    <td>
+                                        <span class="badge bg-info fs-6">@Model.Unit.Level.Name</span>
+                                        <a href="@Url.Action("Details", "Levels", new { id = Model.Unit.LevelId })" class="btn btn-sm btn-outline-info ms-2">
+                                            View Level
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Unit:</td>
+                                    <td>
+                                        <span class="badge bg-secondary fs-6">@Model.Unit.Name</span>
+                                        <a href="@Url.Action("Details", "Units", new { id = Model.UnitId })" class="btn btn-sm btn-outline-secondary ms-2">
+                                            View Unit
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Description:</td>
+                                    <td>@(Model.Description ?? "No description provided")</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">URL:</td>
+                                    <td><code>@Model.Url</code></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Position:</td>
+                                    <td><span class="badge bg-secondary">#@Model.Position</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Status:</td>
+                                    <td>
+                                        <span class="badge @(Model.Status ? "bg-success" : "bg-danger")">
+                                            <i class="fas @(Model.Status ? "fa-eye" : "fa-eye-slash") me-1"></i>
+                                            @(Model.Status ? "Active" : "Inactive")
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Duration:</td>
+                                    <td>
+                                        @if (Model.MinutesWork.HasValue)
+                                        {
+                                            <span class="badge bg-warning text-dark">@Model.MinutesWork minutes</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not specified</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Created:</td>
+                                    <td>@Model.CreatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Lesson Statistics</h6>
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div class="border-end">
+                                                <div class="h4 text-primary">@Model.Slides.Count</div>
+                                                <small class="text-muted">Total Slides</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="h4 text-success">@(Model.MinutesWork ?? 0)</div>
+                                            <small class="text-muted">Minutes</small>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="text-center">
+                                        @if (Model.Slides.Any())
+                                        {
+                                            <div class="text-success">
+                                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                                <div>Content Ready</div>
+                                                <small class="text-muted">Lesson has slides</small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="text-warning">
+                                                <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                                                <div>Needs Content</div>
+                                                <small class="text-muted">No slides added yet</small>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Details))
+                    {
+                        <hr class="my-4">
+                        <h5>Detailed Content</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div style="white-space: pre-line;">@Model.Details</div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Slides.Any())
+                    {
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Slides (@Model.Slides.Count)</h5>
+                            <a href="@Url.Action("Create", "Slides", new { lessonId = Model.Id })" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Slide
+                            </a>
+                        </div>
+                        <div class="row">
+                            @foreach (var slide in Model.Slides.OrderBy(s => s.Position))
+                            {
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <span class="badge bg-secondary">#@slide.Position</span>
+                                                <span class="badge @(slide.Status ? "bg-success" : "bg-secondary")">
+                                                    @(slide.Status ? "Active" : "Inactive")
+                                                </span>
+                                            </div>
+                                            <h6 class="card-title">@slide.Name</h6>
+                                            <p class="card-text text-muted small">@slide.Description</p>
+                                            <div class="d-flex gap-1">
+                                                <a href="@Url.Action("Details", "Slides", new { id = slide.Id })" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-eye"></i>Details
+                                                </a>
+                                                <a href="@Url.Action("Edit", "Slides", new { id = slide.Id })" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-edit"></i>Edit
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <hr class="my-4">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-images fa-2x mb-3"></i>
+                            <p>No slides are currently associated with this lesson.</p>
+                            <a href="@Url.Action("Create", "Slides", new { lessonId = Model.Id })" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add First Slide
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

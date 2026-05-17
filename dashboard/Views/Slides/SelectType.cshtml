@@ -1,0 +1,70 @@
+@model HorofDashboard.ViewModels.Slides.SlideTypeSelectionViewModel
+@{
+    ViewData["Title"] = "Select Question Type";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-layer-group me-2 text-primary"></i>Select Question Type
+                    </h4>
+                    <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Slides
+                    </a>
+                </div>
+
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">
+                        Choose the type of question you want to create.
+                        Each type opens its own dedicated form.
+                    </p>
+
+                    <div class="row g-3">
+                        @foreach (var type in Model.SlideTypes)
+                        {
+                            <div class="col-md-4 col-sm-6">
+                                <a href="@Url.Action(type.Action, new { lessonId = Model.LessonId })"
+                                   class="card h-100 text-decoration-none border type-card">
+                                    <div class="card-body text-center py-4 px-3">
+                                        <div class="type-icon mb-3">
+                                            <i class="fas @type.Icon fa-2x text-primary"></i>
+                                        </div>
+                                        <h5 class="card-title text-dark mb-1">@type.Name</h5>
+                                        <p class="card-text text-muted small mb-0">@type.Description</p>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .type-card {
+        transition: transform .15s ease, box-shadow .15s ease;
+        cursor: pointer;
+    }
+    .type-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.12) !important;
+        border-color: #0d6efd !important;
+    }
+    .type-icon {
+        width: 56px;
+        height: 56px;
+        background: #eef3ff;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

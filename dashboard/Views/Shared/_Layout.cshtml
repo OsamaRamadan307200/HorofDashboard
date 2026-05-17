@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Horof Dashboard</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+<div id="layout-wrapper">
+
+    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <nav id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo"><i class="fas fa-graduation-cap"></i></div>
+            <div class="brand-text">
+                <span class="brand-name">Horof</span>
+                <span class="brand-sub">Dashboard</span>
+            </div>
+        </div>
+
+        <div class="sidebar-body">
+            <p class="menu-section">Overview</p>
+            <ul class="menu-list">
+                <li>
+                    <a href="@Url.Action("Index","Home")"
+                       class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString()=="Home" ? "active" : "")">
+                        <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+
+            <p class="menu-section">Content</p>
+            <ul class="menu-list">
+                <li>
+                    <a href="@Url.Action("Index","Levels")"
+                       class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString()=="Levels" ? "active" : "")">
+                        <i class="fas fa-layer-group"></i><span>Levels</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index","Units")"
+                       class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString()=="Units" ? "active" : "")">
+                        <i class="fas fa-book-open"></i><span>Units</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index","Lessons")"
+                       class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString()=="Lessons" ? "active" : "")">
+                        <i class="fas fa-play-circle"></i><span>Lessons</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index","Slides")"
+                       class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString()=="Slides" ? "active" : "")">
+                        <i class="fas fa-images"></i><span>Slides</span>
+                    </a>
+                </li>
+            </ul>
+
+            <p class="menu-section">Quick Add</p>
+            <ul class="menu-list">
+                <li>
+                    <a href="@Url.Action("Create","Levels")" class="menu-item">
+                        <i class="fas fa-plus-circle"></i><span>New Level</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("SelectType","Slides")" class="menu-item">
+                        <i class="fas fa-plus-circle"></i><span>New Slide</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <small class="text-muted">Horof &copy; @DateTime.Now.Year</small>
+        </div>
+    </nav>
+
+    <!-- ── Main Content ─────────────────────────────────────── -->
+    <div id="main-content">
+
+        <!-- Topbar -->
+        <div id="topbar">
+            <button id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="topbar-title">@ViewData["Title"]</span>
+            <span class="topbar-date ms-auto me-3 text-muted small d-none d-md-inline">
+                <i class="fas fa-calendar-alt me-1"></i>@DateTime.Now.ToString("MMM dd, yyyy")
+            </span>
+        </div>
+
+        <!-- Page Body -->
+        <div id="page-body">
+            @RenderBody()
+        </div>
+
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<script>
+    function toggleSidebar() {
+        document.getElementById('layout-wrapper').classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', document.getElementById('layout-wrapper').classList.contains('sidebar-collapsed'));
+    }
+    if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        document.getElementById('layout-wrapper').classList.add('sidebar-collapsed');
+    }
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

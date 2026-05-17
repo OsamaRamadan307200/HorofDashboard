@@ -1,0 +1,113 @@
+﻿@model HorofDashboard.Models.Unit
+
+@{
+    ViewData["Title"] = "Delete Unit";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Delete Unit
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Warning!</strong> Are you sure you want to delete this unit? This action cannot be undone.
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <h5>@Model.Name</h5>
+                        <span class="badge bg-info fs-6 mb-2">Level: @Model.Level.Name</span>
+                        <p class="text-muted">@Model.Description</p>
+                    </div>
+
+                    <div class="row text-center mb-4">
+                        <div class="col-3">
+                            <div class="card bg-light">
+                                <div class="card-body py-2">
+                                    <div class="h5 mb-0">@Model.Position</div>
+                                    <small class="text-muted">Position</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="card bg-light">
+                                <div class="card-body py-2">
+                                    <div class="h5 mb-0">@Model.Lessons.Count</div>
+                                    <small class="text-muted">Lessons</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="card bg-light">
+                                <div class="card-body py-2">
+                                    <div class="h5 mb-0">@(Model.HoursWork ?? 0)</div>
+                                    <small class="text-muted">Hours</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="card bg-light">
+                                <div class="card-body py-2">
+                                    <div class="h5 mb-0">
+                                        <span class="badge @(Model.Status ? "bg-success" : "bg-secondary")">
+                                            @(Model.Status ? "Active" : "Inactive")
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">Status</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Lessons.Any())
+                    {
+                        <div class="alert alert-danger">
+                            <strong>Important:</strong> This unit has @Model.Lessons.Count associated lesson(s).
+                            Deleting this unit will also delete these lessons.
+                        </div>
+                    }
+
+                    <div>
+                        <input asp-for="Id" type="hidden" />
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button onclick="deleteUnit()" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Yes, Delete Unit
+                            </button>
+                            <a href="@Url.Action("Index", new { levelId = Model.LevelId })" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteUnit() {
+            const form = $('<form>', {
+                'method': 'POST',
+                'action': '@Url.Action("Delete", new { id = Model.Id })'
+            });
+
+            // Add anti-forgery token
+            form.append($('@Html.AntiForgeryToken()'));
+
+            // Add ID
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': 'Id',
+                'value': '@Model.Id'
+            }));
+
+            $('body').append(form);
+            form.submit();
+        }
+    </script>
+}

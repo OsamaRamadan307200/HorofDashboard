@@ -1,0 +1,133 @@
+﻿@model HorofDashboard.ViewModels.UnitCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Unit";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Create New Unit</h4>
+                        <a href="@Url.Action("Index", new { levelId = Model.LevelId })" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Units
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">Name *</label>
+                                    <input asp-for="Name" class="form-control" placeholder="Enter unit name" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="LevelId" class="form-label">Level *</label>
+                                    <select asp-for="LevelId" asp-items="ViewBag.Levels" class="form-select">
+                                        <option value="">Select a level</option>
+                                    </select>
+                                    <span asp-validation-for="LevelId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Url" class="form-label">URL *</label>
+                            <input asp-for="Url" class="form-control" placeholder="/units/unit-name" />
+                            <span asp-validation-for="Url" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter unit description"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Position" class="form-label">Position</label>
+                                    <input asp-for="Position" class="form-control" type="number" min="1" />
+                                    <span asp-validation-for="Position" class="text-danger"></span>
+                                    <div class="form-text">Leave empty to auto-assign</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="HoursWork" class="form-label">Expected Hours</label>
+                                    <input asp-for="HoursWork" class="form-control" type="number" min="0" />
+                                    <span asp-validation-for="HoursWork" class="text-danger"></span>
+                                    <div class="form-text">Estimated study hours</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="LessonsCount" class="form-label">Expected Lessons</label>
+                                    <input asp-for="LessonsCount" class="form-control" type="number" min="0" />
+                                    <span asp-validation-for="LessonsCount" class="text-danger"></span>
+                                    <div class="form-text">Number of lessons planned</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="Status" class="form-check-input" type="checkbox" />
+                                <label asp-for="Status" class="form-check-label">Active Status</label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-3">
+                            <button onclick="submitForm()" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Create Unit
+                            </button>
+                            <a href="@Url.Action("Index", new { levelId = Model.LevelId })" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function submitForm() {
+            const form = $('<form>', {
+                'method': 'POST',
+                'action': '@Url.Action("Create")'
+            });
+
+            // Add anti-forgery token
+            form.append($('@Html.AntiForgeryToken()'));
+
+            // Add all form fields
+            $('input, select, textarea').each(function() {
+                if ($(this).attr('name')) {
+                    const input = $('<input>', {
+                        'type': 'hidden',
+                        'name': $(this).attr('name'),
+                        'value': $(this).is(':checkbox') ? $(this).is(':checked') : $(this).val()
+                    });
+                    form.append(input);
+                }
+            });
+
+            $('body').append(form);
+            form.submit();
+        }
+    </script>
+}

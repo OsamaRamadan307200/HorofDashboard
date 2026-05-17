@@ -1,0 +1,177 @@
+﻿@model HorofDashboard.Models.Unit
+
+@{
+    ViewData["Title"] = "Unit Details";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Unit Details</h4>
+                        <div class="btn-group">
+                            <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a>
+                            <a href="@Url.Action("Index", new { levelId = Model.LevelId })" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Units
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold text-muted" width="25%">Name:</td>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Level:</td>
+                                    <td>
+                                        <span class="badge bg-info fs-6">@Model.Level.Name</span>
+                                        <a href="@Url.Action("Details", "Levels", new { id = Model.LevelId })" class="btn btn-sm btn-outline-info ms-2">
+                                            View Level
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Description:</td>
+                                    <td>@(Model.Description ?? "No description provided")</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">URL:</td>
+                                    <td><code>@Model.Url</code></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Position:</td>
+                                    <td><span class="badge bg-secondary">#@Model.Position</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Status:</td>
+                                    <td>
+                                        <span class="badge @(Model.Status ? "bg-success" : "bg-danger")">
+                                            <i class="fas @(Model.Status ? "fa-eye" : "fa-eye-slash") me-1"></i>
+                                            @(Model.Status ? "Active" : "Inactive")
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Created:</td>
+                                    <td>@Model.CreatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Unit Statistics</h6>
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <div class="border-end">
+                                                <div class="h4 text-primary">@(Model.HoursWork ?? 0)</div>
+                                                <small class="text-muted">Expected Hours</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="h4 text-info">@Model.Lessons.Count</div>
+                                            <small class="text-muted">Current Lessons</small>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="text-center">
+                                        <div class="h5 text-success">@(Model.LessonsCount ?? 0)</div>
+                                        <small class="text-muted">Expected Lessons</small>
+                                        @if (Model.LessonsCount.HasValue && Model.LessonsCount.Value > 0)
+                                        {
+                                            var progress = Math.Round((double)Model.Lessons.Count / Model.LessonsCount.Value * 100, 1);
+                                            <div class="progress mt-2" style="height: 8px;">
+                                                <div class="progress-bar @(progress == 100 ? "bg-success" : "bg-primary")"
+                                                     style="width: @progress%"></div>
+                                            </div>
+                                            <small class="text-muted">@progress% Complete</small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Lessons.Any())
+                    {
+                        <hr class="my-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Lessons (@Model.Lessons.Count)</h5>
+                            <a href="@Url.Action("Create", "Lessons", new { unitId = Model.Id })" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Lesson
+                            </a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Position</th>
+                                        <th>Lesson Name</th>
+                                        <th>Status</th>
+                                        <th>HoursWork</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var lesson in Model.Lessons.OrderBy(l => l.Position))
+                                    {
+                                        <tr>
+                                            <td><span class="badge bg-secondary">#@lesson.Position</span></td>
+                                            <td>@lesson.Name</td>
+                                            <td>
+                                                <span class="badge @(lesson.Status ? "bg-success" : "bg-secondary")">
+                                                    @(lesson.Status ? "Active" : "Inactive")
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (lesson.MinutesWork.HasValue)
+                                                {
+                                                    <span class="text-muted">@lesson.MinutesWork min</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>@lesson.CreatedAt.ToString("MM/dd/yyyy")</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="@Url.Action("Details", "Lessons", new { id = lesson.Id })" class="btn btn-outline-info">
+                                                        <i class="fas fa-eye"></i>Details
+                                                    </a>
+                                                    <a href="@Url.Action("Edit", "Lessons", new { id = lesson.Id })" class="btn btn-outline-warning">
+                                                        <i class="fas fa-edit"></i>Edit
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <hr class="my-4">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-play-circle fa-2x mb-3"></i>
+                            <p>No lessons are currently associated with this unit.</p>
+                            <a href="@Url.Action("Create", "Lessons", new { unitId = Model.Id })" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add First Lesson
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

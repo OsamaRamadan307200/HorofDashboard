@@ -1,45 +1,53 @@
-# [Project name]
+# Horof Dashboard
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An ASP.NET Core 8.0 MVC admin dashboard for managing content in the Horof Arabic letter-learning app (Levels → Units → Lessons → Slides hierarchy).
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Workflow: `artifacts/horof-dashboard: web` — runs `dotnet run --project /home/runner/workspace/dashboard/HorofDashboard.csproj` on port 18288
+- `pnpm --filter @workspace/api-server run dev` — run the Node.js API server (port 8080, unused by dashboard)
+- `pnpm run typecheck` — full typecheck across Node packages
+- Required env (optional override): `MSSQL_CONNECTION_STRING` — SQL Server connection string (falls back to appsettings.json value)
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- ASP.NET Core 8.0 MVC (C#), Entity Framework Core, SQL Server
+- Frontend: Bootstrap 5, Font Awesome 6.5, custom CSS variables
+- Dark sidebar layout with collapsible nav (localStorage state)
+- pnpm workspaces (Node.js side — API server, mockup sandbox)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `dashboard/` — the entire .NET MVC project
+- `dashboard/Controllers/` — MVC controllers (Levels, Units, Lessons, Slides, Home)
+- `dashboard/Views/` — Razor views per controller + Shared/_Layout.cshtml
+- `dashboard/Models/` — EF Core models + ViewModels
+- `dashboard/wwwroot/css/site.css` — all custom styles (CSS variables, sidebar, cards)
+- `dashboard/appsettings.json` — SQL Server connection string (production DB)
+- `artifacts/horof-dashboard/` — artifact registration only (artifact.toml, no source)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- No authentication — admin-only internal tool
+- SQL Server hosted externally at SQL1004.site4now.net (credentials in appsettings.json, already public on GitHub)
+- `MSSQL_CONNECTION_STRING` env var used instead of `DATABASE_URL` to avoid collision with Replit's PostgreSQL env var
+- `UseHttpsRedirection()` removed — Replit proxy handles HTTPS termination
+- `LessonsCount` on Unit is auto-synced on every lesson create/edit/delete
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Dashboard home: live counts of Levels, Units, Lessons, Slides with quick-add buttons
+- CRUD for all 4 content types with full Arabic text support
+- Slide types: MultipleChoice, TrueFalse, VoiceChoices, Completion, Ordering
+- Unit delete is guarded — blocks deletion if lessons exist
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep .NET MVC stack (no migration to other frameworks)
+- No authentication required
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Do NOT rename `DATABASE_URL` — use `MSSQL_CONNECTION_STRING` for the SQL Server override to avoid conflict with Replit's built-in PostgreSQL env
+- `dotnet run` compiles on first start — allow ~15-20s for the workflow to become ready
+- The `artifacts/horof-dashboard/` directory is just an artifact stub; all real source is in `dashboard/`

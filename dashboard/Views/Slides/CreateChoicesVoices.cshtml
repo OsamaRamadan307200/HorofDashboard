@@ -1,0 +1,127 @@
+@model HorofDashboard.ViewModels.Slides.ChoicesVoicesViewModel
+@{
+    ViewData["Title"]         = "Create Choices + Voice Slide";
+    ViewData["SlideTypeName"] = "Choices + Voice";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-volume-up me-2 text-primary"></i>Choices + Voice
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("SelectType", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-exchange-alt me-1"></i>Change Type
+                        </a>
+                        <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="CreateChoicesVoices" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <partial name="_SlideBaseFields" model="Model" />
+
+                        <hr class="my-4" />
+
+                        <h5 class="mb-1">Answer Choices</h5>
+                        <p class="text-muted small mb-3">
+                            Add at least 2 choices and mark the correct one.
+                            Each choice may have a voice recording associated with it.
+                        </p>
+
+                        <div id="cvList" class="mb-2"></div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addCv">
+                            <i class="fas fa-plus me-1"></i>Add Choice
+                        </button>
+
+                        <div class="d-flex gap-2 pt-2 border-top mt-3">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Create Slide
+                            </button>
+                            <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                               class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        function addCv(text = '', isCorrect = false) {
+            const list = document.getElementById('cvList');
+            const idx  = list.querySelectorAll('.cv-item').length;
+            const num  = idx + 1;
+
+            list.insertAdjacentHTML('beforeend', `
+                <div class="cv-item row align-items-center mb-2 g-2">
+                    <div class="col-md-7">
+                        <div class="input-group">
+                            <span class="input-group-text text-muted">${num}</span>
+                            <input type="text" class="form-control cv-text"
+                                   name="Choices[${idx}]"
+                                   placeholder="Choice ${num}"
+                                   value="${escHtml(text)}" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check ms-2">
+                            <input type="radio" name="CorrectChoiceIndex"
+                                   class="form-check-input" value="${num}"
+                                   ${isCorrect ? 'checked' : ''} required />
+                            <label class="form-check-label text-success fw-semibold">Correct</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-cv">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>`);
+        }
+
+        function reindexCv() {
+            document.querySelectorAll('#cvList .cv-item').forEach((el, i) => {
+                const num = i + 1;
+                el.querySelector('.input-group-text').textContent = num;
+                el.querySelector('.cv-text').name                = `Choices[${i}]`;
+                el.querySelector('.cv-text').placeholder         = `Choice ${num}`;
+                el.querySelector('input[type="radio"]').value    = num;
+            });
+        }
+
+        function escHtml(s) {
+            return s.replace(/[&<>"']/g, c =>
+                ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+
+        document.getElementById('addCv').addEventListener('click', () => addCv());
+
+        document.getElementById('cvList').addEventListener('click', e => {
+            if (!e.target.closest('.remove-cv')) return;
+            if (document.querySelectorAll('#cvList .cv-item').length <= 2) {
+                alert('You need at least 2 choices.');
+                return;
+            }
+            e.target.closest('.cv-item').remove();
+            reindexCv();
+        });
+
+        addCv(); addCv(); addCv(); addCv();
+    </script>
+}

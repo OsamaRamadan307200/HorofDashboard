@@ -1,0 +1,138 @@
+@model HorofDashboard.ViewModels.Slides.VoiceChoicesViewModel
+@{
+    ViewData["Title"]         = "Create Voice Choices Slide";
+    ViewData["SlideTypeName"] = "Voice Choices";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-microphone me-2 text-primary"></i>Voice Choices
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("SelectType", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-exchange-alt me-1"></i>Change Type
+                        </a>
+                        <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="CreateVoiceChoices" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <partial name="_SlideBaseFields" model="Model" />
+
+                        <hr class="my-4" />
+
+                        <h5 class="mb-3">Voice File</h5>
+                        <div class="mb-4">
+                            <label asp-for="VoiceLink" class="form-label fw-semibold">
+                                Audio URL <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-volume-up"></i></span>
+                                <input asp-for="VoiceLink" class="form-control"
+                                       placeholder="https://example.com/audio.mp3" />
+                            </div>
+                            <span asp-validation-for="VoiceLink" class="text-danger small"></span>
+                        </div>
+
+                        <h5 class="mb-1">Answer Choices</h5>
+                        <p class="text-muted small mb-3">
+                            Add at least 2 choices and mark which one is correct.
+                        </p>
+
+                        <div id="voiceChoicesList" class="mb-2"></div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addVoiceChoice">
+                            <i class="fas fa-plus me-1"></i>Add Choice
+                        </button>
+
+                        <div class="d-flex gap-2 pt-2 border-top mt-3">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Create Slide
+                            </button>
+                            <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                               class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        function addVoiceChoice(text = '', isCorrect = false) {
+            const list = document.getElementById('voiceChoicesList');
+            const idx  = list.querySelectorAll('.vc-item').length;
+            const num  = idx + 1;
+
+            list.insertAdjacentHTML('beforeend', `
+                <div class="vc-item row align-items-center mb-2 g-2">
+                    <div class="col-md-7">
+                        <div class="input-group">
+                            <span class="input-group-text text-muted">${num}</span>
+                            <input type="text" class="form-control vc-text"
+                                   name="VoiceChoices[${idx}]"
+                                   placeholder="Choice ${num}"
+                                   value="${escHtml(text)}" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check ms-2">
+                            <input type="radio" name="CorrectVoiceChoiceIndex"
+                                   class="form-check-input" value="${idx}"
+                                   ${isCorrect ? 'checked' : ''} required />
+                            <label class="form-check-label text-success fw-semibold">Correct</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-vc">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>`);
+        }
+
+        function reindexVC() {
+            document.querySelectorAll('#voiceChoicesList .vc-item').forEach((el, i) => {
+                el.querySelector('.input-group-text').textContent = i + 1;
+                el.querySelector('.vc-text').name                = `VoiceChoices[${i}]`;
+                el.querySelector('.vc-text').placeholder         = `Choice ${i + 1}`;
+                el.querySelector('input[type="radio"]').value    = i;
+            });
+        }
+
+        function escHtml(s) {
+            return s.replace(/[&<>"']/g, c =>
+                ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+
+        document.getElementById('addVoiceChoice').addEventListener('click', () => addVoiceChoice());
+
+        document.getElementById('voiceChoicesList').addEventListener('click', e => {
+            if (!e.target.closest('.remove-vc')) return;
+            if (document.querySelectorAll('#voiceChoicesList .vc-item').length <= 2) {
+                alert('You need at least 2 choices.');
+                return;
+            }
+            e.target.closest('.vc-item').remove();
+            reindexVC();
+        });
+
+        addVoiceChoice(); addVoiceChoice(); addVoiceChoice(); addVoiceChoice();
+    </script>
+}

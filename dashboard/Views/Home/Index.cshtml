@@ -1,0 +1,134 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    int totalLevels  = ViewBag.TotalLevels  ?? 0;
+    int activeLevels = ViewBag.ActiveLevels ?? 0;
+    int totalUnits   = ViewBag.TotalUnits   ?? 0;
+    int totalLessons = ViewBag.TotalLessons ?? 0;
+    int totalSlides  = ViewBag.TotalSlides  ?? 0;
+    int activeSlides = ViewBag.ActiveSlides ?? 0;
+}
+
+<div class="container-fluid py-4 px-4">
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 h-100" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
+                <div class="card-body text-white p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1 fw-semibold text-uppercase" style="font-size:11px;opacity:.8;">Levels</p>
+                            <h2 class="mb-0 fw-bold">@totalLevels</h2>
+                            <small style="opacity:.75;">@activeLevels active</small>
+                        </div>
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,255,255,.15);">
+                            <i class="fas fa-layer-group fa-lg"></i>
+                        </div>
+                    </div>
+                    <a href="/Levels" class="d-block mt-3 text-white text-decoration-none" style="opacity:.8;font-size:12px;">View all levels →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 h-100" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
+                <div class="card-body text-white p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1 fw-semibold text-uppercase" style="font-size:11px;opacity:.8;">Units</p>
+                            <h2 class="mb-0 fw-bold">@totalUnits</h2>
+                            <small style="opacity:.75;">across all levels</small>
+                        </div>
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,255,255,.15);">
+                            <i class="fas fa-book-open fa-lg"></i>
+                        </div>
+                    </div>
+                    <a href="/Units" class="d-block mt-3 text-white text-decoration-none" style="opacity:.8;font-size:12px;">View all units →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 h-100" style="background:linear-gradient(135deg,#10b981,#059669);">
+                <div class="card-body text-white p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1 fw-semibold text-uppercase" style="font-size:11px;opacity:.8;">Lessons</p>
+                            <h2 class="mb-0 fw-bold">@totalLessons</h2>
+                            <small style="opacity:.75;">across all units</small>
+                        </div>
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,255,255,.15);">
+                            <i class="fas fa-play-circle fa-lg"></i>
+                        </div>
+                    </div>
+                    <a href="/Lessons" class="d-block mt-3 text-white text-decoration-none" style="opacity:.8;font-size:12px;">View all lessons →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 h-100" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                <div class="card-body text-white p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1 fw-semibold text-uppercase" style="font-size:11px;opacity:.8;">Slides</p>
+                            <h2 class="mb-0 fw-bold">@totalSlides</h2>
+                            <small style="opacity:.75;">@activeSlides active</small>
+                        </div>
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,255,255,.15);">
+                            <i class="fas fa-images fa-lg"></i>
+                        </div>
+                    </div>
+                    <a href="/Slides" class="d-block mt-3 text-white text-decoration-none" style="opacity:.8;font-size:12px;">View all slides →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lower Row -->
+    <div class="row g-3">
+        <div class="col-md-5">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a href="/Levels/Create" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Level
+                    </a>
+                    <a href="/Units/Create" class="btn btn-outline-secondary">
+                        <i class="fas fa-plus me-2"></i>Add New Unit
+                    </a>
+                    <a href="/Lessons/Create" class="btn btn-outline-success">
+                        <i class="fas fa-plus me-2"></i>Add New Lesson
+                    </a>
+                    <a href="/Slides/SelectType" class="btn btn-outline-warning">
+                        <i class="fas fa-plus me-2"></i>Add New Slide
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-sitemap text-info me-2"></i>Content Hierarchy
+                </div>
+                <div class="card-body">
+                    <div class="p-3 rounded-3 mb-3" style="background:#eff6ff;border:1px solid #bfdbfe;">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fas fa-layer-group fa-lg text-primary"></i>
+                            <div>
+                                <div class="fw-semibold">Levels → Units → Lessons → Slides</div>
+                                <small class="text-muted">Content is organised in this hierarchy</small>
+                            </div>
+                        </div>
+                    </div>
+                    <ol class="mb-0 ps-3" style="font-size:13.5px;line-height:2;">
+                        <li><strong>Levels</strong> — top-level courses (e.g. Beginner, Intermediate)</li>
+                        <li><strong>Units</strong> — chapters inside a level</li>
+                        <li><strong>Lessons</strong> — individual sessions inside a unit</li>
+                        <li><strong>Slides</strong> — interactive exercises (MC, True/False, etc.)</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

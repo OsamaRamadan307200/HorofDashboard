@@ -1,0 +1,196 @@
+@model HorofDashboard.ViewModels.Slides.LinkWordsViewModel
+@{
+    ViewData["Title"]         = "Create Link Words Slide";
+    ViewData["SlideTypeName"] = "Link Words";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-link me-2 text-primary"></i>Link Words
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("SelectType", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-exchange-alt me-1"></i>Change Type
+                        </a>
+                        <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="CreateLinkWords" method="post" id="lwForm">
+                        @Html.AntiForgeryToken()
+
+                        <partial name="_SlideBaseFields" model="Model" />
+
+                        <hr class="my-4" />
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h5 class="mb-1">First Column</h5>
+                                <p class="text-muted small mb-3">Items the student will see on the left.</p>
+                                <div id="firstColumnList"></div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="addFirstCol">
+                                    <i class="fas fa-plus me-1"></i>Add Item
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-1">Second Column</h5>
+                                <p class="text-muted small mb-3">Items the student will see on the right.</p>
+                                <div id="secondColumnList"></div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="addSecondCol">
+                                    <i class="fas fa-plus me-1"></i>Add Item
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <h5 class="mb-1">Correct Matches</h5>
+                            <p class="text-muted small mb-3">
+                                Define which left-column item matches which right-column item.
+                            </p>
+                            <div id="matchesList"></div>
+                            <button type="button" class="btn btn-outline-success btn-sm mt-2" id="addMatch">
+                                <i class="fas fa-plus me-1"></i>Add Match
+                            </button>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-4 border-top mt-4">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Create Slide
+                            </button>
+                            <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                               class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        // ── Column helpers ─────────────────────────────────────────────────────────
+
+        function addColItem(listId, namePrefix, label) {
+            const list = document.getElementById(listId);
+            const idx  = list.querySelectorAll('.col-item').length;
+            list.insertAdjacentHTML('beforeend', `
+                <div class="col-item input-group mb-2">
+                    <span class="input-group-text text-muted">${idx + 1}</span>
+                    <input type="text" class="form-control col-input"
+                           name="${namePrefix}[${idx}]"
+                           placeholder="${label} ${idx + 1}" />
+                    <button type="button" class="btn btn-outline-danger remove-col">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>`);
+            refreshMatchDropdowns();
+        }
+
+        function reindexCol(listId, namePrefix, label) {
+            document.querySelectorAll(`#${listId} .col-item`).forEach((el, i) => {
+                el.querySelector('.input-group-text').textContent = i + 1;
+                el.querySelector('.col-input').name              = `${namePrefix}[${i}]`;
+                el.querySelector('.col-input').placeholder       = `${label} ${i + 1}`;
+            });
+        }
+
+        // ── Match dropdown helpers ─────────────────────────────────────────────────
+
+        function colOptions(selector) {
+            return [...document.querySelectorAll(selector)].map((el, i) =>
+                `<option value="${i + 1}">${el.value.trim() || 'Item ' + (i + 1)}</option>`
+            ).join('');
+        }
+
+        function refreshMatchDropdowns() {
+            const first  = colOptions('#firstColumnList .col-input');
+            const second = colOptions('#secondColumnList .col-input');
+            document.querySelectorAll('.first-match').forEach(s  => s.innerHTML = first);
+            document.querySelectorAll('.second-match').forEach(s => s.innerHTML = second);
+        }
+
+        function addMatch() {
+            document.getElementById('matchesList').insertAdjacentHTML('beforeend', `
+                <div class="match-item row align-items-center mb-2 g-2">
+                    <div class="col-md-4">
+                        <select class="form-select first-match"></select>
+                    </div>
+                    <div class="col-md-1 text-center">
+                        <i class="fas fa-arrow-right text-muted"></i>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select second-match"></select>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-match">
+                            <i class="fas fa-times me-1"></i>Remove
+                        </button>
+                    </div>
+                </div>`);
+            refreshMatchDropdowns();
+        }
+
+        // ── Serialise matches into hidden fields before POST ──────────────────────
+
+        document.getElementById('lwForm').addEventListener('submit', function () {
+            document.querySelectorAll('.match-item').forEach(row => {
+                const k = row.querySelector('.first-match').value;
+                const v = row.querySelector('.second-match').value;
+                this.insertAdjacentHTML('beforeend',
+                    `<input type="hidden" name="LinkWordsAnswer[${k}]" value="${v}" />`);
+            });
+        });
+
+        // ── Event delegation ──────────────────────────────────────────────────────
+
+        document.getElementById('addFirstCol').addEventListener('click',
+            () => addColItem('firstColumnList', 'FirstColumn', 'First item'));
+
+        document.getElementById('addSecondCol').addEventListener('click',
+            () => addColItem('secondColumnList', 'SecondColumn', 'Second item'));
+
+        document.getElementById('addMatch').addEventListener('click', addMatch);
+
+        document.addEventListener('click', e => {
+            const removeCol = e.target.closest('.remove-col');
+            if (removeCol) {
+                const list = removeCol.closest('[id]');
+                if (list.querySelectorAll('.col-item').length <= 1) return;
+                removeCol.closest('.col-item').remove();
+                const isFirst = list.id === 'firstColumnList';
+                reindexCol(list.id,
+                    isFirst ? 'FirstColumn' : 'SecondColumn',
+                    isFirst ? 'First item'  : 'Second item');
+                refreshMatchDropdowns();
+            }
+            if (e.target.closest('.remove-match'))
+                e.target.closest('.match-item').remove();
+        });
+
+        document.addEventListener('input', e => {
+            if (e.target.classList.contains('col-input')) refreshMatchDropdowns();
+        });
+
+        // ── Initialise with defaults ──────────────────────────────────────────────
+
+        ['First item', 'First item'].forEach(() =>
+            addColItem('firstColumnList', 'FirstColumn', 'First item'));
+        ['Second item', 'Second item'].forEach(() =>
+            addColItem('secondColumnList', 'SecondColumn', 'Second item'));
+        addMatch();
+        addMatch();
+    </script>
+}

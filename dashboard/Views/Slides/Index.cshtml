@@ -1,0 +1,459 @@
+﻿@model IEnumerable<HorofDashboard.Models.Slide>
+
+@{
+    ViewData["Title"] = "Slide Management";
+    var lessonFilter = ViewBag.LessonFilter as HorofDashboard.Models.Lesson;
+    var unitFilter = ViewBag.UnitFilter as HorofDashboard.Models.Unit;
+    var levelFilter = ViewBag.LevelFilter as HorofDashboard.Models.Level;
+    var lessons = ViewBag.Lessons as List<HorofDashboard.Models.Lesson>;
+    var slideTypes = ViewBag.SlideTypes as List<HorofDashboard.Models.MasterSlideType>;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1">Slide Management</h1>
+                    <p class="text-muted mb-0">
+                        @if (lessonFilter != null)
+                        {
+                            <span>Managing slides for: <strong>@lessonFilter.Unit.Level.Name → @lessonFilter.Unit.Name → @lessonFilter.Name</strong></span>
+                        }
+                        else if (unitFilter != null)
+                        {
+                            <span>Managing slides for unit: <strong>@unitFilter.Level.Name → @unitFilter.Name</strong></span>
+                        }
+                        else if (levelFilter != null)
+                        {
+                            <span>Managing slides for level: <strong>@levelFilter.Name</strong></span>
+                        }
+                        else
+                        {
+                            <span>Manage course slides and interactive content</span>
+                        }
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    @if (lessonFilter != null)
+                    {
+                        <a href="@Url.Action("Create", new { lessonId = lessonFilter.Id })" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Slide to @lessonFilter.Name
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Create")" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add New Slide
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb Navigation -->
+    @if (lessonFilter != null)
+    {
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Levels")">Levels</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Details", "Levels", new { id = lessonFilter.Unit.LevelId })">@lessonFilter.Unit.Level.Name</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Units", new { levelId = lessonFilter.Unit.LevelId })">Units</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Details", "Units", new { id = lessonFilter.Unit.Id })">@lessonFilter.Unit.Name</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Lessons", new { unitId = lessonFilter.Unit.Id })">Lessons</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Details", "Lessons", new { id = lessonFilter.Id })">@lessonFilter.Name</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Slides</li>
+            </ol>
+        </nav>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">@Model.Count()</h3>
+                    <p class="mb-0">Total Slides</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">@Model.Count(s => s.Status)</h3>
+                    <p class="mb-0">Active</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">@Model.Sum(s => s.Points ?? 0)</h3>
+                    <p class="mb-0">Total Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">@(Model.Any() ? Math.Round(Model.Average(s => s.Points ?? 0), 1) : 0)</h3>
+                    <p class="mb-0">Avg Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">@Model.GroupBy(s => s.MasterSlideTypeId).Count()</h3>
+                    <p class="mb-0">Slide Types</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">@Model.GroupBy(s => s.Lesson).Count()</h3>
+                    <p class="mb-0">Lessons</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Lesson-Grouped Slides -->
+    <div class="row">
+        @{
+            var lessonGroups = Model.GroupBy(s => s.Lesson)
+            .OrderBy(g => g.Key.Unit.Level.Position)
+            .ThenBy(g => g.Key.Unit.Position)
+            .ThenBy(g => g.Key.Position);
+        }
+
+        @foreach (var lessonGroup in lessonGroups)
+        {
+            var lesson = lessonGroup.Key;
+            var slides = lessonGroup.OrderBy(s => s.Position).ToList();
+            var lessonIndex = lessonGroups.ToList().IndexOf(lessonGroup);
+
+            <div class="col-12 mb-4">
+                <!-- Lesson Header Bar -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-outline-light me-3" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#lesson-@lesson.Id" aria-expanded="@(lessonIndex == 0 ? "true" : "false")">
+                                    <i class="fas fa-chevron-down collapse-icon"></i>
+                                </button>
+                                <div>
+                                    <h5 class="mb-1">
+                                        <i class="fas fa-play-circle me-2"></i>
+                                        @lesson.Name
+                                    </h5>
+                                    <small class="opacity-75">
+                                        @lesson.Unit.Level.Name → @lesson.Unit.Name
+                                        @if (lesson.MinutesWork.HasValue)
+                                        {
+                                            <span class="ms-3"><i class="fas fa-clock me-1"></i>@lesson.MinutesWork min</span>
+                                        }
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0">@slides.Count</div>
+                                    <small class="opacity-75">Slides</small>
+                                </div>
+                                <div class="text-center">
+                                    <div class="h5 mb-0">@slides.Sum(s => s.Points ?? 0)</div>
+                                    <small class="opacity-75">Points</small>
+                                </div>
+                                <div class="text-center">
+                                    <div class="h5 mb-0">@slides.Count(s => s.Status)</div>
+                                    <small class="opacity-75">Active</small>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="@Url.Action("Details", "Lessons", new { id = lesson.Id })"
+                                       class="btn btn-sm btn-outline-light" title="View Lesson">
+                                        <i class="fas fa-eye"></i>Details
+                                    </a>
+                                    <a href="@Url.Action("Create", new { lessonId = lesson.Id })"
+                                       class="btn btn-sm btn-light" title="Add Slide">
+                                        <i class="fas fa-plus text-primary"></i>Create
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slides Content -->
+                    <div class="collapse @(lessonIndex == 0 ? "show" : "")" id="lesson-@lesson.Id">
+                        <div class="card-body">
+                            @if (slides.Any())
+                            {
+                                <div class="row">
+                                    @foreach (var slide in slides)
+                                    {
+                                        <div class="col-lg-4 col-md-6 mb-3">
+                                            <div class="card h-100 slide-card @(slide.Status ? "" : "opacity-50")" data-slide-id="@slide.Id">
+                                                <!-- Slide Type Badge -->
+                                                <div class="position-relative">
+                                                    @{
+                                                        var typeColor = slide.MasterSlideTypeId switch
+                                                        {
+                                                            1 => "bg-success", // Multiple Choice
+                                                            2 => "bg-warning", // linkWords
+                                                            3 => "bg-info", // TrueFalse
+                                                            5 => "bg-danger", // Write Word
+                                                            6 => "bg-purple", // Voice Choices
+                                                            _ => "bg-secondary"
+                                                        };
+                                                        var typeIcon = slide.MasterSlideTypeId switch
+                                                        {
+                                                            1 => "fa-list-ul", // Multiple Choice
+                                                            2 => "fa-link", // linkWords
+                                                            3 => "fa-check-circle", // TrueFalse
+                                                            5 => "fa-keyboard", // Write Word
+                                                            6 => "fa-microphone", // Voice Choices
+                                                            _ => "fa-question"
+                                                        };
+                                                    }
+                                                    <div class="position-absolute top-0 start-0 m-2">
+                                                        <span class="badge @typeColor">
+                                                            <i class="fas @typeIcon me-1"></i>
+                                                            @(slide.MasterSlideType?.Name ?? "Unknown")
+                                                        </span>
+                                                    </div>
+                                                    <div class="position-absolute top-0 end-0 m-2">
+                                                        <span class="badge bg-secondary">#@slide.Position</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="card-body d-flex flex-column">
+                                                    <div class="mb-auto">
+                                                        <h6 class="card-title">@slide.Name</h6>
+                                                        @if (!string.IsNullOrEmpty(slide.Description))
+                                                        {
+                                                            <p class="card-text text-muted small">@slide.Description</p>
+                                                        }
+                                                    </div>
+
+                                                    <!-- Content Status Indicators -->
+                                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                                        <div class="d-flex gap-2">
+                                                            @if (!string.IsNullOrEmpty(slide.SlideContent))
+                                                            {
+                                                                <i class="fas fa-check-circle text-success" title="Has content"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="fas fa-exclamation-circle text-warning" title="No content"></i>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(slide.Answer))
+                                                            {
+                                                                <i class="fas fa-key text-primary" title="Has answer"></i>
+                                                            }
+                                                        </div>
+                                                        <div class="text-end">
+                                                            @if (slide.Points.HasValue && slide.Points.Value > 0)
+                                                            {
+                                                                <span class="badge bg-warning text-dark">@slide.Points pts</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted small">0 pts</span>
+                                                            }
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Status Toggle -->
+                                                    <div class="mt-3">
+                                                        <button class="btn btn-sm w-100 status-toggle @(slide.Status ? "btn-outline-success" : "btn-outline-danger")"
+                                                                data-slide-id="@slide.Id"
+                                                                data-current-status="@slide.Status.ToString().ToLower()">
+                                                            <i class="fas @(slide.Status ? "fa-eye" : "fa-eye-slash") me-1"></i>
+                                                            @(slide.Status ? "Active" : "Inactive")
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Action Buttons -->
+                                                    <div class="mt-2">
+                                                        <div class="btn-group w-100">
+                                                            <a href="@Url.Action("Details", new { id = slide.Id })"
+                                                               class="btn btn-sm btn-outline-info">
+                                                                <i class="fas fa-eye"></i>Details
+                                                            </a>
+                                                            <a href="@Url.Action("Edit", new { id = slide.Id })"
+                                                               class="btn btn-sm btn-outline-warning">
+                                                                <i class="fas fa-edit"></i>Edit
+                                                            </a>
+                                                            <a href="@Url.Action("Delete", new { id = slide.Id })"
+                                                               class="btn btn-sm btn-outline-danger">
+                                                                <i class="fas fa-trash"></i>Delete
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5">
+                                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No slides in this lesson</h5>
+                                    <p class="text-muted">Start by creating your first slide</p>
+                                    <a href="@Url.Action("Create", new { lessonId = lesson.Id })" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Create First Slide
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!lessonGroups.Any())
+        {
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-images fa-4x text-muted mb-4"></i>
+                        <h3 class="text-muted">No slides found</h3>
+                        <p class="text-muted">Create your first slide to get started</p>
+                        <a href="@Url.Action("Create")" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Create First Slide
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Quick Actions Floating Panel -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <div class="btn-group-vertical">
+            <button class="btn btn-primary btn-sm" onclick="expandAll()" title="Expand All Lessons">
+                <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="collapseAll()" title="Collapse All Lessons">
+                <i class="fas fa-compress-arrows-alt"></i>
+            </button>
+            <a href="@Url.Action("Create")" class="btn btn-success btn-sm" title="Add New Slide">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Status toggle functionality
+            $('.status-toggle').click(function() {
+                const button = $(this);
+                const slideId = button.data('slide-id');
+
+                $.ajax({
+                    url: `/api/SlidesApi/${slideId}/status`,
+                    type: 'PATCH',
+                    success: function(response) {
+                        const newStatus = response.status;
+                        button.data('current-status', newStatus);
+
+                        if (newStatus) {
+                            button.removeClass('btn-outline-danger').addClass('btn-outline-success');
+                            button.html('<i class="fas fa-eye me-1"></i>Active');
+                            button.closest('.slide-card').removeClass('opacity-50');
+                        } else {
+                            button.removeClass('btn-outline-success').addClass('btn-outline-danger');
+                            button.html('<i class="fas fa-eye-slash me-1"></i>Inactive');
+                            button.closest('.slide-card').addClass('opacity-50');
+                        }
+                    },
+                    error: function() {
+                        alert('Error updating status');
+                    }
+                });
+            });
+
+            // Collapse/Expand icon animation
+            $('[data-bs-toggle="collapse"]').on('click', function() {
+                const icon = $(this).find('.collapse-icon');
+                icon.toggleClass('fa-chevron-down fa-chevron-right');
+            });
+
+            // Auto-collapse behavior
+            $('.collapse').on('show.bs.collapse', function() {
+                $('.collapse.show').not(this).collapse('hide');
+            });
+        });
+
+        // Quick action functions
+        function expandAll() {
+            $('.collapse').collapse('show');
+            $('.collapse-icon').removeClass('fa-chevron-right').addClass('fa-chevron-down');
+        }
+
+        function collapseAll() {
+            $('.collapse').collapse('hide');
+            $('.collapse-icon').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+        }
+    </script>
+
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+
+        .bg-purple {
+            background-color: #6f42c1 !important;
+        }
+
+        .slide-card {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+        }
+
+            .slide-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+
+        .collapse-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .card-header {
+            border-bottom: none;
+        }
+
+        .position-fixed .btn-group-vertical .btn {
+            margin-bottom: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @@media (max-width: 768px) {
+            .col-lg-4.col-md-6
+
+        {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        }
+    </style>
+}

@@ -1,0 +1,94 @@
+@model HorofDashboard.ViewModels.Slides.TrueFalseViewModel
+@{
+    ViewData["Title"]         = "Create True / False Slide";
+    ViewData["SlideTypeName"] = "True / False";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-check-circle me-2 text-primary"></i>True / False
+                    </h4>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("SelectType", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-exchange-alt me-1"></i>Change Type
+                        </a>
+                        <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="CreateTrueFalse" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <partial name="_SlideBaseFields" model="Model" />
+
+                        <hr class="my-4" />
+
+                        <h5 class="mb-3">Correct Answer</h5>
+
+                        <div class="d-flex gap-3 mb-3">
+                            <div class="tf-option @(Model.TrueFalseAnswer == "true" ? "selected" : "")"
+                                 data-value="true" onclick="selectTF(this)">
+                                <i class="fas fa-check text-success fa-2x mb-2"></i>
+                                <div class="fw-bold fs-5">True</div>
+                            </div>
+                            <div class="tf-option @(Model.TrueFalseAnswer == "false" ? "selected" : "")"
+                                 data-value="false" onclick="selectTF(this)">
+                                <i class="fas fa-times text-danger fa-2x mb-2"></i>
+                                <div class="fw-bold fs-5">False</div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" asp-for="TrueFalseAnswer" id="tfHidden" />
+                        <span asp-validation-for="TrueFalseAnswer" class="text-danger small d-block mb-3"></span>
+
+                        <div class="d-flex gap-2 pt-2 border-top mt-3">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>Create Slide
+                            </button>
+                            <a href="@Url.Action("Index", new { lessonId = Model.LessonId })"
+                               class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tf-option {
+        flex: 1;
+        max-width: 180px;
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        padding: 24px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color .2s, background .2s;
+        user-select: none;
+    }
+    .tf-option:hover  { border-color: #6c757d; background: #f8f9fa; }
+    .tf-option.selected { border-color: #0d6efd; background: #eef3ff; }
+</style>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        function selectTF(el) {
+            document.querySelectorAll('.tf-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('tfHidden').value = el.dataset.value;
+        }
+    </script>
+}
