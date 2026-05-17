@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HorofDashboard")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4e7c34749b553faa4c4f3a4ff1cc57f11db363ac")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2e0d970fa5598d0a6661fa42808c5f4c2e900d2c")]
 [assembly: System.Reflection.AssemblyProductAttribute("HorofDashboard")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HorofDashboard")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
